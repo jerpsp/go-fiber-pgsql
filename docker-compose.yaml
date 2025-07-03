@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    image: go-fiber-api
+    container_name: go-fiber-api
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - go-fiber-api:/go
+    restart: always
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    restart: always
+
+volumes:
+  go-fiber-api:
+    name: go-fiber-api
+  postgres:
+    name: postgres
+
+networks:
+  default:
+    name: go-fiber-network
