@@ -11,7 +11,7 @@ logs:
 	docker logs -f go-fiber-api
 
 reset:
-	make drop && make create && make migrate
+	make drop && make create && make migrate && make seed
 
 drop:
 	docker exec go-fiber-api go run cmd/cli/main.go dbDrop
@@ -21,3 +21,6 @@ create:
 
 migrate:
 	docker exec go-fiber-api go run cmd/cli/main.go dbAutoMigrate
+
+seed:
+	docker exec go-fiber-api go run cmd/cli/main.go dbSeed	
