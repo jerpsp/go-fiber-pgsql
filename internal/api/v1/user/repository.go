@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	FindAllUsers() ([]User, error)
 	FindUserByID(userID uuid.UUID) (*User, error)
+	FindUserByEmail(email string) (*User, error)
 	CreateUser(user *User) (*User, error)
 	UpdateUser(userID uuid.UUID, user *User) error
 	DeleteUser(userID uuid.UUID) error
@@ -34,6 +35,14 @@ func (r *userRepository) FindAllUsers() ([]User, error) {
 func (r *userRepository) FindUserByID(userID uuid.UUID) (*User, error) {
 	var user User
 	if err := r.db.DB.First(&user, "id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepository) FindUserByEmail(email string) (*User, error) {
+	var user User
+	if err := r.db.DB.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

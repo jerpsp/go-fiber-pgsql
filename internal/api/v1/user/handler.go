@@ -45,7 +45,7 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if err := utils.GetValidator().Struct(&user); err != nil {
+	if err := utils.Validate(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 

@@ -27,11 +27,33 @@ services:
       test: ["CMD", "pg_isready", "-U", "postgres"]
     restart: always
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight:/db
+    depends_on:
+      - redis
+
 volumes:
   go-fiber-api:
     name: go-fiber-api
   postgres:
     name: postgres
+  redis:
+    name: redis
+  redisinsight:
+    name: redisinsight
 
 networks:
   default:

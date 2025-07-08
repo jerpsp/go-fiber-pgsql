@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jerpsp/go-fiber-beginner/config"
+	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/auth"
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/book"
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/user"
 	"github.com/jerpsp/go-fiber-beginner/pkg/database"
@@ -27,7 +28,7 @@ to quickly create a Cobra application.`,
 		cfg := config.InitConfig()
 
 		db := database.NewGormDB(cfg.PostgresDB)
-		db.DB.AutoMigrate(&book.Book{}, &user.User{})
+		db.DB.AutoMigrate(&book.Book{}, &user.User{}, &auth.Token{})
 		db.Disconnect()
 
 		defer fmt.Println("RUN dbAutoMigrate Completed")

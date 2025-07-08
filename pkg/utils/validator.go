@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/go-playground/validator/v10"
@@ -16,4 +17,17 @@ func GetValidator() *validator.Validate {
 	})()
 
 	return validatorInstance
+}
+
+// Validate validates a struct based on the validator tags
+func Validate(s interface{}) error {
+	if err := GetValidator().Struct(s); err != nil {
+		if validationErrors, ok := err.(validator.ValidationErrors); ok {
+			for _, e := range validationErrors {
+				return fmt.Errorf("validation error: field '%s' failed on the '%s' tag", e.Field(), e.Tag())
+			}
+		}
+		return err
+	}
+	return nil
 }

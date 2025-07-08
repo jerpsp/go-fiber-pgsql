@@ -17,15 +17,25 @@ type (
 		AllowOrigins string        `mapstructure:"ALLOW_ORIGINS" validate:"required"`
 	}
 
+	JWT struct {
+		Secret          string        `mapstructure:"JWT_SECRET" validate:"required"`
+		AccessTokenExp  time.Duration `mapstructure:"JWT_ACCESS_TOKEN_EXP" validate:"required"`
+		RefreshTokenExp time.Duration `mapstructure:"JWT_REFRESH_TOKEN_EXP" validate:"required"`
+	}
+
 	Config struct {
 		Server     *Server                  `mapstructure:"server" validate:"required"`
 		PostgresDB *database.PostgresConfig `mapstructure:"postgresdb" validate:"required"`
+		JWT        *JWT                     `mapstructure:"jwt" validate:"required"`
+		Redis      *database.RedisConfig    `mapstructure:"redis" validate:"required"`
 	}
 )
 
 func InitConfig() *Config {
 	var server Server
 	var postgresDB database.PostgresConfig
+	var jwt JWT
+	var redis database.RedisConfig
 
 	env := os.Getenv("APP_ENV")
 	if env == "" {
@@ -50,9 +60,19 @@ func InitConfig() *Config {
 		panic(err)
 	}
 
+	if err := viper.Unmarshal(&jwt); err != nil {
+		panic(err)
+	}
+
+	if err := viper.Unmarshal(&redis); err != nil {
+		panic(err)
+	}
+
 	cfg := &Config{
 		Server:     &server,
 		PostgresDB: &postgresDB,
+		JWT:        &jwt,
+		Redis:      &redis,
 	}
 
 	return cfg
