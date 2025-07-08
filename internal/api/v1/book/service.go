@@ -1,7 +1,6 @@
 package book
 
 import (
-	"mime/multipart"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +15,6 @@ type BookService interface {
 	CreateBook(c *fiber.Ctx, newBook Book) (Book, error)
 	UpdateBook(c *fiber.Ctx, bookID uuid.UUID, updatedBook BookRequest) (Book, error)
 	DeleteBook(c *fiber.Ctx, bookID uuid.UUID) error
-	UploadFile(c *fiber.Ctx, file *multipart.FileHeader) (string, error)
 }
 
 type bookService struct {
@@ -75,12 +73,4 @@ func (s *bookService) UpdateBook(c *fiber.Ctx, bookID uuid.UUID, updateBook Book
 
 func (s *bookService) DeleteBook(c *fiber.Ctx, bookID uuid.UUID) error {
 	return s.repo.DeleteBook(c, bookID)
-}
-
-func (s *bookService) UploadFile(c *fiber.Ctx, file *multipart.FileHeader) (string, error) {
-	if err := c.SaveFile(file, "./public/uploads/"+file.Filename); err != nil {
-		return "", fiber.NewError(fiber.StatusInternalServerError, "Failed to save file")
-	}
-
-	return file.Filename, nil
 }

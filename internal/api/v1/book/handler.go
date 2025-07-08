@@ -81,17 +81,3 @@ func (h *BookHandler) DeleteBook(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusNoContent)
 }
-
-func (h *BookHandler) UploadFile(c *fiber.Ctx) error {
-	file, err := c.FormFile("file")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File upload failed"})
-	}
-
-	name, err := h.service.UploadFile(c, file)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return c.JSON(fiber.Map{"message": "File uploaded successfully", "filename": name})
-}

@@ -10,6 +10,5 @@ func RegisterRoutes(router fiber.Router, handler *BookHandler) {
 		bookGroup.Post("", handler.CreateBook)
 		bookGroup.Patch("/:id", handler.UpdateBook)
 		bookGroup.Delete("/:id", handler.DeleteBook)
-		bookGroup.Post("/upload-file", handler.UploadFile)
 	}
 }
