@@ -6,11 +6,22 @@ import (
 	"github.com/jerpsp/go-fiber-beginner/config"
 )
 
-func UseCorsMiddleware(cfg *config.Config, r *fiber.App) {
-	// Middleware setup can be done here
-	// For example, you can set up logging, error handling, etc.
+// func UseCorsMiddleware(cfg *config.Config, r *fiber.App) {
+// 	// Middleware setup can be done here
+// 	// For example, you can set up logging, error handling, etc.
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins: cfg.Server.AllowOrigins,
-	}))
+// 	r.Use(cors.New(cors.Config{
+// 		AllowOrigins: cfg.Server.AllowOrigins,
+// 	}))
+// }
+
+func Cors(cfg *config.Config) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		cors.New(cors.Config{
+			AllowOrigins: cfg.Server.AllowOrigins,
+		})
+
+		return c.Next()
+	}
+
 }

@@ -19,3 +19,14 @@ type TokenResponse struct {
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
+
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+type RegisterRequest struct {
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required"`
+	FirstName string `json:"first_name" validate:"required,max=50"`
+	LastName  string `json:"last_name" validate:"max=50"`
+}

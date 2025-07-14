@@ -3,6 +3,7 @@ package auth
 import (
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/config"
@@ -12,22 +13,24 @@ import (
 )
 
 type AuthService interface {
-	Login(req LoginRequest) (*TokenResponse, error)
-	RefreshToken(refreshToken string) (*TokenResponse, error)
-	Logout(userID uuid.UUID) error
+	Login(c *fiber.Ctx, req LoginRequest) (*TokenResponse, error)
+	RefreshToken(c *fiber.Ctx, refreshToken string) (*TokenResponse, error)
+	Logout(c *fiber.Ctx, userID uuid.UUID) error
+	LogoutWithToken(c *fiber.Ctx, refreshToken string) error
+	Register(c *fiber.Ctx, req RegisterRequest) error
 }
 
 type authService struct {
 	config         *config.Config
 	userRepository user.UserRepository
-	tokenRepo      AuthRepository
+	repo           AuthRepository
 }
 
-func NewAuthService(config *config.Config, userRepository user.UserRepository, tokenRepo AuthRepository) AuthService {
-	return &authService{config: config, userRepository: userRepository, tokenRepo: tokenRepo}
+func NewAuthService(config *config.Config, userRepository user.UserRepository, repo AuthRepository) AuthService {
+	return &authService{config: config, userRepository: userRepository, repo: repo}
 }
 
-func (s *authService) Login(req LoginRequest) (*TokenResponse, error) {
+func (s *authService) Login(c *fiber.Ctx, req LoginRequest) (*TokenResponse, error) {
 	user, err := s.userRepository.FindUserByEmail(req.Email)
 	if err != nil {
 		return nil, utils.ErrInvalidCredentials
@@ -37,12 +40,12 @@ func (s *authService) Login(req LoginRequest) (*TokenResponse, error) {
 		return nil, utils.ErrInvalidCredentials
 	}
 
-	accessToken, accessExpiry, err := s.generateToken(user.ID, user.Email, utils.AccessToken)
+	accessToken, accessExpiry, err := s.generateToken(c, user.ID, user.Email, utils.AccessToken)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, _, err := s.generateToken(user.ID, user.Email, utils.RefreshToken)
+	refreshToken, _, err := s.generateToken(c, user.ID, user.Email, utils.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -55,19 +58,19 @@ func (s *authService) Login(req LoginRequest) (*TokenResponse, error) {
 	}, nil
 }
 
-func (s *authService) RefreshToken(refreshTokenStr string) (*TokenResponse, error) {
+func (s *authService) RefreshToken(c *fiber.Ctx, refreshTokenStr string) (*TokenResponse, error) {
 	userInfo, err := utils.ValidateToken(s.config, refreshTokenStr, utils.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get token from DB to ensure it's still valid (hasn't been revoked)
-	_, err = s.tokenRepo.GetTokenByValue(refreshTokenStr)
+	_, err = s.repo.GetTokenByValue(c, refreshTokenStr)
 	if err != nil {
 		return nil, utils.ErrInvalidToken
 	}
 
-	accessToken, accessExpiry, err := s.generateToken(userInfo.ID, userInfo.Email, utils.AccessToken)
+	accessToken, accessExpiry, err := s.generateToken(c, userInfo.ID, userInfo.Email, utils.AccessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -81,11 +84,25 @@ func (s *authService) RefreshToken(refreshTokenStr string) (*TokenResponse, erro
 	}, nil
 }
 
-func (s *authService) Logout(userID uuid.UUID) error {
-	return s.tokenRepo.DeleteUserTokens(userID, utils.RefreshToken)
+func (s *authService) Logout(c *fiber.Ctx, userID uuid.UUID) error {
+	return s.repo.DeleteUserTokens(c, userID, utils.RefreshToken)
 }
 
-func (s *authService) generateToken(userID uuid.UUID, email string, tokenType utils.TokenType) (string, time.Time, error) {
+func (s *authService) LogoutWithToken(c *fiber.Ctx, refreshToken string) error {
+	_, err := utils.ValidateToken(s.config, refreshToken, utils.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	token, err := s.repo.GetTokenByValue(c, refreshToken)
+	if err != nil {
+		return utils.ErrInvalidToken
+	}
+
+	return s.repo.DeleteToken(c, token.ID)
+}
+
+func (s *authService) generateToken(c *fiber.Ctx, userID uuid.UUID, email string, tokenType utils.TokenType) (string, time.Time, error) {
 	var expiration time.Duration
 
 	if tokenType == utils.AccessToken {
@@ -94,14 +111,14 @@ func (s *authService) generateToken(userID uuid.UUID, email string, tokenType ut
 		expiration = s.config.JWT.RefreshTokenExp
 	}
 
-	expirationTime := time.Now().Add(expiration)
+	expirationTime := time.Now().UTC().Add(expiration)
 
 	claims := jwt.MapClaims{
 		"user_id": userID.String(),
 		"email":   email,
 		"type":    string(tokenType),
 		"exp":     expirationTime.Unix(),
-		"iat":     time.Now().Unix(),
+		"iat":     time.Now().UTC().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -110,7 +127,7 @@ func (s *authService) generateToken(userID uuid.UUID, email string, tokenType ut
 		return "", time.Time{}, err
 	}
 
-	// Store the token in the database if it's a refresh token
+	// Store the token in the redis if it's a refresh token
 	if tokenType == utils.RefreshToken {
 		tokenObj := &Token{
 			UserID:    userID,
@@ -118,10 +135,23 @@ func (s *authService) generateToken(userID uuid.UUID, email string, tokenType ut
 			Type:      tokenType,
 			ExpiresAt: expirationTime,
 		}
-		if err := s.tokenRepo.CreateToken(tokenObj); err != nil {
+		if err := s.repo.CreateToken(c, tokenObj); err != nil {
 			return "", time.Time{}, err
 		}
 	}
 
 	return tokenString, expirationTime, nil
+}
+
+func (s *authService) Register(c *fiber.Ctx, req RegisterRequest) error {
+	user := &user.User{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	}
+	if err := user.HashPassword(req.Password); err != nil {
+		return err
+	}
+
+	return s.repo.CreateUser(user)
 }

@@ -22,7 +22,8 @@ func StartServer(cfg *config.Config, bookHandler *book.BookHandler,
 		WriteTimeout:  cfg.Server.Timeout * time.Second,
 	})
 
-	middleware.UseCorsMiddleware(cfg, app)
+	app.Use(middleware.Cors(cfg))
+	app.Use(middleware.Logger())
 
 	apiV1 := app.Group("/api/v1")
 
