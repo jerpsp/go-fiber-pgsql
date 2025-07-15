@@ -11,6 +11,7 @@ type UserService interface {
 	CreateUser(userParams UserRequest) (*User, error)
 	UpdateUser(userID uuid.UUID, userParams *UserUpdateRequest) error
 	DeleteUser(userID uuid.UUID) error
+	UpdateUserRole(userID uuid.UUID, role UserRole) error
 }
 
 type userService struct {
@@ -39,15 +40,23 @@ func (s *userService) GetUserByID(userID uuid.UUID) (*User, error) {
 }
 
 func (s *userService) CreateUser(userParams UserRequest) (*User, error) {
-	user := &User{
+	var role UserRole
+	if userParams.Role == "" {
+		role = RoleUser
+	} else {
+		role = UserRole(userParams.Role)
+	}
+
+	newUser := &User{
 		Email:     userParams.Email,
 		FirstName: userParams.FirstName,
 		LastName:  userParams.LastName,
+		Role:      role,
 	}
-	if err := user.HashPassword(userParams.Password); err != nil {
+	if err := newUser.HashPassword(userParams.Password); err != nil {
 		return nil, err
 	}
-	createdUser, err := s.repo.CreateUser(user)
+	createdUser, err := s.repo.CreateUser(newUser)
 	if err != nil {
 		return nil, err
 	}
@@ -72,4 +81,11 @@ func (s *userService) DeleteUser(userID uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func (s *userService) UpdateUserRole(userID uuid.UUID, role UserRole) error {
+	user := &User{
+		Role: role,
+	}
+	return s.repo.UpdateUser(userID, user)
 }

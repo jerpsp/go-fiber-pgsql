@@ -16,16 +16,32 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 	}
 	users := []user.User{
 		{
+			Email:     "admin@email.com",
+			Password:  string(hashedPassword),
+			FirstName: "admin",
+			LastName:  "admin",
+			Role:      user.RoleAdmin,
+		},
+		{
+			Email:     "moderator@email.com",
+			Password:  string(hashedPassword),
+			FirstName: "moderator",
+			LastName:  "moderator",
+			Role:      user.RoleModerator,
+		},
+		{
 			Email:     "john.doe@email.com",
 			Password:  string(hashedPassword),
 			FirstName: "John",
 			LastName:  "Doe",
+			Role:      user.RoleUser,
 		},
 		{
 			Email:     "jane.doe@email.com",
 			Password:  string(hashedPassword),
 			FirstName: "Jane",
 			LastName:  "Doe",
+			Role:      user.RoleUser,
 		},
 	}
 

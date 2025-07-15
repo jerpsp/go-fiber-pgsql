@@ -29,4 +29,5 @@ type RegisterRequest struct {
 	Password  string `json:"password" validate:"required"`
 	FirstName string `json:"first_name" validate:"required,max=50"`
 	LastName  string `json:"last_name" validate:"max=50"`
+	Role      string `json:"role" validate:"omitempty,oneof=admin user moderator"`
 }

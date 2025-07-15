@@ -107,9 +107,13 @@ func LoggerWithConfig(config LoggerConfig) fiber.Handler {
 			statusColor = "\033[31m" // Red
 		}
 
+		// loc, _ := time.LoadLocation("Asia/Bangkok")
+		now := time.Now().Format("2006-01-02 15:04:05")
+
 		// Log format for request/response summary
 		logMessage := fmt.Sprintf(
-			"%s[%s]%s %s%s%s %s%d%s %s %dB %s",
+			"%s | %s[%s]%s%s | %s |%s %s%d%s | %s | %dB | %s",
+			now,
 			methodColor, method, resetColor,
 			resetColor, path, resetColor,
 			statusColor, status, resetColor,

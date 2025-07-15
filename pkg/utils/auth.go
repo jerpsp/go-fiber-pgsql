@@ -13,6 +13,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrInvalidToken       = errors.New("invalid token")
 	ErrTokenExpired       = errors.New("token has expired")
+	ErrAccessDenied       = errors.New("access denied: insufficient permissions")
 )
 
 type TokenType string
@@ -25,6 +26,7 @@ const (
 type UserInfo struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
+	Role  string    `json:"role"`
 }
 
 // ValidateToken validates a JWT token and returns the user information
@@ -70,8 +72,17 @@ func ValidateToken(cfg *config.Config, tokenString string, tokenType TokenType) 
 		return nil, ErrInvalidToken
 	}
 
+	// Get role if exists, default to "user" if not present (for backwards compatibility)
+	role := "user"
+	if roleValue, exists := claims["role"]; exists {
+		if roleStr, ok := roleValue.(string); ok {
+			role = roleStr
+		}
+	}
+
 	return &UserInfo{
 		ID:    userID,
 		Email: claims["email"].(string),
+		Role:  role,
 	}, nil
 }

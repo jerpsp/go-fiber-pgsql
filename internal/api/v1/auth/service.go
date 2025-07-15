@@ -40,12 +40,12 @@ func (s *authService) Login(c *fiber.Ctx, req LoginRequest) (*TokenResponse, err
 		return nil, utils.ErrInvalidCredentials
 	}
 
-	accessToken, accessExpiry, err := s.generateToken(c, user.ID, user.Email, utils.AccessToken)
+	accessToken, accessExpiry, err := s.generateToken(c, user.ID, user.Email, string(user.Role), utils.AccessToken)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, _, err := s.generateToken(c, user.ID, user.Email, utils.RefreshToken)
+	refreshToken, _, err := s.generateToken(c, user.ID, user.Email, string(user.Role), utils.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *authService) RefreshToken(c *fiber.Ctx, refreshTokenStr string) (*Token
 		return nil, utils.ErrInvalidToken
 	}
 
-	accessToken, accessExpiry, err := s.generateToken(c, userInfo.ID, userInfo.Email, utils.AccessToken)
+	accessToken, accessExpiry, err := s.generateToken(c, userInfo.ID, userInfo.Email, userInfo.Role, utils.AccessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (s *authService) LogoutWithToken(c *fiber.Ctx, refreshToken string) error {
 	return s.repo.DeleteToken(c, token.ID)
 }
 
-func (s *authService) generateToken(c *fiber.Ctx, userID uuid.UUID, email string, tokenType utils.TokenType) (string, time.Time, error) {
+func (s *authService) generateToken(c *fiber.Ctx, userID uuid.UUID, email string, role string, tokenType utils.TokenType) (string, time.Time, error) {
 	var expiration time.Duration
 
 	if tokenType == utils.AccessToken {
@@ -116,6 +116,7 @@ func (s *authService) generateToken(c *fiber.Ctx, userID uuid.UUID, email string
 	claims := jwt.MapClaims{
 		"user_id": userID.String(),
 		"email":   email,
+		"role":    role,
 		"type":    string(tokenType),
 		"exp":     expirationTime.Unix(),
 		"iat":     time.Now().UTC().Unix(),
@@ -144,14 +145,15 @@ func (s *authService) generateToken(c *fiber.Ctx, userID uuid.UUID, email string
 }
 
 func (s *authService) Register(c *fiber.Ctx, req RegisterRequest) error {
-	user := &user.User{
+	newUser := &user.User{
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
+		Role:      user.RoleUser,
 	}
-	if err := user.HashPassword(req.Password); err != nil {
+	if err := newUser.HashPassword(req.Password); err != nil {
 		return err
 	}
 
-	return s.repo.CreateUser(user)
+	return s.repo.CreateUser(newUser)
 }

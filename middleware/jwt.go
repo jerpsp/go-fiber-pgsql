@@ -48,6 +48,7 @@ func JWTMiddleware(cfg *config.Config) fiber.Handler {
 		// Set user information in context
 		c.Locals("userID", userInfo.ID)
 		c.Locals("email", userInfo.Email)
+		c.Locals("role", userInfo.Role)
 
 		return c.Next()
 	}

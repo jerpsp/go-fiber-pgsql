@@ -9,13 +9,17 @@ import (
 func RegisterRoutes(cfg *config.Config, router fiber.Router, handler *BookHandler) {
 	bookGroup := router.Group("/books")
 	{
-		// Public routes
+		// Public routes - anyone can access
 		bookGroup.Get("", handler.GetBooks)
 		bookGroup.Get("/:id", handler.GetBook)
 
-		// Protected routes
+		// User authenticated routes - any authenticated user can access
 		bookGroup.Post("", middleware.JWTMiddleware(cfg), handler.CreateBook)
-		bookGroup.Patch("/:id", middleware.JWTMiddleware(cfg), handler.UpdateBook)
-		bookGroup.Delete("/:id", middleware.JWTMiddleware(cfg), handler.DeleteBook)
+
+		// Moderator or Admin routes - only moderators and admins can update books
+		bookGroup.Patch("/:id", middleware.JWTMiddleware(cfg), middleware.ModeratorOrAdmin(), handler.UpdateBook)
+
+		// Admin only routes - only admins can delete books
+		bookGroup.Delete("/:id", middleware.JWTMiddleware(cfg), middleware.AdminOnly(), handler.DeleteBook)
 	}
 }

@@ -92,3 +92,26 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "User deleted successfully"})
 }
+
+func (h *UserHandler) UpdateUserRole(c *fiber.Ctx) error {
+	var roleUpdate UserRoleUpdateRequest
+
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+	}
+
+	if err := c.BodyParser(&roleUpdate); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if err := utils.GetValidator().Struct(&roleUpdate); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+	}
+
+	if err := h.service.UpdateUserRole(id, UserRole(roleUpdate.Role)); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "User role updated successfully"})
+}
