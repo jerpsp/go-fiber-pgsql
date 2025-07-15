@@ -16,12 +16,11 @@ import (
 // }
 
 func Cors(cfg *config.Config) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		cors.New(cors.Config{
-			AllowOrigins: cfg.Server.AllowOrigins,
-		})
-
-		return c.Next()
-	}
-
+	return cors.New(cors.Config{
+		AllowOrigins:     cfg.Server.AllowOrigins,
+		AllowMethods:     "GET,POST,PATCH,DELETE,OPTIONS",
+		AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
+		AllowCredentials: true,
+		ExposeHeaders:    "Authorization",
+	})
 }
