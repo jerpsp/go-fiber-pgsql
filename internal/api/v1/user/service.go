@@ -6,7 +6,7 @@ import (
 )
 
 type UserService interface {
-	GetAllUsers() ([]User, error)
+	GetAllUsers(page, limit int) ([]User, int64, error)
 	GetUserByID(userID uuid.UUID) (*User, error)
 	CreateUser(userParams UserRequest) (*User, error)
 	UpdateUser(userID uuid.UUID, userParams *UserUpdateRequest) error
@@ -23,12 +23,19 @@ func NewUserService(config *config.Config, repo UserRepository) UserService {
 	return &userService{config: config, repo: repo}
 }
 
-func (s *userService) GetAllUsers() ([]User, error) {
-	users, err := s.repo.FindAllUsers()
-	if err != nil {
-		return nil, err
+func (s *userService) GetAllUsers(page, limit int) ([]User, int64, error) {
+	if page <= 0 {
+		page = 1
 	}
-	return users, nil
+	if limit <= 0 {
+		limit = 10
+	}
+
+	users, total, err := s.repo.FindAllUsers(page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return users, total, nil
 }
 
 func (s *userService) GetUserByID(userID uuid.UUID) (*User, error) {

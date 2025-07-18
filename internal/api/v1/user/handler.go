@@ -17,12 +17,36 @@ func NewUserHandler(config *config.Config, service UserService) *UserHandler {
 }
 
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
-	users, err := h.service.GetAllUsers()
+	pagination := PaginationRequest{
+		Page:  1,
+		Limit: 10,
+	}
+
+	if c.Query("page") != "" {
+		if err := c.QueryParser(&pagination); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid pagination parameters"})
+		}
+	}
+
+	users, total, err := h.service.GetAllUsers(pagination.Page, pagination.Limit)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"users": users, "count": len(users)})
+	totalPages := int(total) / pagination.Limit
+	if int(total)%pagination.Limit > 0 {
+		totalPages++
+	}
+
+	response := PaginatedResponse{
+		Users:      users,
+		Total:      total,
+		Page:       pagination.Page,
+		PerPage:    pagination.Limit,
+		TotalPages: totalPages,
+	}
+
+	return c.JSON(response)
 }
 
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {

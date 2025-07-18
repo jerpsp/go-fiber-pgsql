@@ -16,3 +16,16 @@ type UserUpdateRequest struct {
 type UserRoleUpdateRequest struct {
 	Role string `json:"role" validate:"required,oneof=admin user moderator"`
 }
+
+type PaginationRequest struct {
+	Page  int `json:"page" query:"page"`
+	Limit int `json:"limit" query:"limit"`
+}
+
+type PaginatedResponse struct {
+	Users      []User `json:"users"`
+	Total      int64  `json:"total"`
+	Page       int    `json:"page"`
+	PerPage    int    `json:"per_page"`
+	TotalPages int    `json:"total_pages"`
+}

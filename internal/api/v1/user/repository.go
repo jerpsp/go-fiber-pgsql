@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	FindAllUsers() ([]User, error)
+	FindAllUsers(page, perPage int) ([]User, int64, error)
 	FindUserByID(userID uuid.UUID) (*User, error)
 	FindUserByEmail(email string) (*User, error)
 	CreateUser(user *User) (*User, error)
@@ -24,12 +24,22 @@ func NewUserRepository(cfg *config.Config, db *database.GormDB) UserRepository {
 	return &userRepository{config: cfg, db: db}
 }
 
-func (r *userRepository) FindAllUsers() ([]User, error) {
+func (r *userRepository) FindAllUsers(page, perPage int) ([]User, int64, error) {
 	var users []User
-	if err := r.db.DB.Find(&users).Error; err != nil {
-		return nil, err
+	var total int64
+
+	// Count total records
+	if err := r.db.DB.Model(&User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
-	return users, nil
+
+	// Apply pagination
+	offset := (page - 1) * perPage
+	if err := r.db.DB.Offset(offset).Limit(perPage).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
 }
 
 func (r *userRepository) FindUserByID(userID uuid.UUID) (*User, error) {
