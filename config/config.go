@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jerpsp/go-fiber-beginner/pkg/database"
+	"github.com/jerpsp/go-fiber-beginner/pkg/storage"
 	"github.com/spf13/viper"
 )
 
@@ -28,6 +29,7 @@ type (
 		PostgresDB *database.PostgresConfig `mapstructure:"postgresdb" validate:"required"`
 		JWT        *JWT                     `mapstructure:"jwt" validate:"required"`
 		Redis      *database.RedisConfig    `mapstructure:"redis" validate:"required"`
+		AWS        *storage.AWSConfig       `mapstructure:"aws" validate:"required"`
 	}
 )
 
@@ -36,6 +38,7 @@ func InitConfig() *Config {
 	var postgresDB database.PostgresConfig
 	var jwt JWT
 	var redis database.RedisConfig
+	var aws storage.AWSConfig
 
 	env := os.Getenv("APP_ENV")
 	if env == "" {
@@ -67,12 +70,16 @@ func InitConfig() *Config {
 	if err := viper.Unmarshal(&redis); err != nil {
 		panic(err)
 	}
+	if err := viper.Unmarshal(&aws); err != nil {
+		panic(err)
+	}
 
 	cfg := &Config{
 		Server:     &server,
 		PostgresDB: &postgresDB,
 		JWT:        &jwt,
 		Redis:      &redis,
+		AWS:        &aws,
 	}
 
 	return cfg

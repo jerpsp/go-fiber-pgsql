@@ -31,7 +31,7 @@ func NewAuthService(config *config.Config, userRepository user.UserRepository, r
 }
 
 func (s *authService) Login(c *fiber.Ctx, req LoginRequest) (*TokenResponse, error) {
-	user, err := s.userRepository.FindUserByEmail(req.Email)
+	user, err := s.userRepository.FindUserByEmail(c, req.Email)
 	if err != nil {
 		return nil, utils.ErrInvalidCredentials
 	}

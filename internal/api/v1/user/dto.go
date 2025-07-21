@@ -1,20 +1,20 @@
 package user
 
-type UserRequest struct {
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required"`
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name" validate:"omitempty"`
-	Role      string `json:"role" validate:"omitempty,oneof=admin user moderator"`
+type UserCreateRequest struct {
+	Email     string `json:"email" form:"email" validate:"required,email"`
+	Password  string `json:"password" form:"password" validate:"required"`
+	FirstName string `json:"first_name" form:"first_name" validate:"required"`
+	LastName  string `json:"last_name" form:"last_name" validate:"omitempty"`
+	Role      string `json:"role" form:"role" validate:"omitempty,oneof=admin user moderator"`
 }
 
 type UserUpdateRequest struct {
-	FirstName string `json:"first_name" validate:"omitempty"`
-	LastName  string `json:"last_name" validate:"omitempty"`
+	FirstName string `json:"first_name" form:"first_name" validate:"omitempty"`
+	LastName  string `json:"last_name" form:"last_name" validate:"omitempty"`
 }
 
 type UserRoleUpdateRequest struct {
-	Role string `json:"role" validate:"required,oneof=admin user moderator"`
+	Role string `json:"role" form:"role" validate:"required,oneof=admin user moderator"`
 }
 
 type PaginationRequest struct {

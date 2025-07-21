@@ -54,7 +54,14 @@ func LoggerWithConfig(config LoggerConfig) fiber.Handler {
 		// Store the original body since Fiber doesn't have built-in body cloning
 		// We need to manually store the body before passing to the next handler
 		var reqBodyMap map[string]interface{}
-		if reqBody != "" && isJSON(reqBody) {
+
+		// Check content type to properly handle different types of request data
+		contentType := string(c.Request().Header.ContentType())
+		isFormData := strings.Contains(contentType, "multipart/form-data") ||
+			strings.Contains(contentType, "application/x-www-form-urlencoded")
+
+		// Only try to unmarshal JSON if content type is JSON and body is valid JSON
+		if reqBody != "" && !isFormData && isJSON(reqBody) {
 			json.Unmarshal([]byte(reqBody), &reqBodyMap)
 		}
 
@@ -137,7 +144,46 @@ func LoggerWithConfig(config LoggerConfig) fiber.Handler {
 
 		// Get and log request body if it exists, isn't empty, and isn't a sensitive route
 		if reqBody != "" && !isSensitiveRoute {
-			fmt.Printf("Request Body: %s\n", formatJSON(reqBody))
+			// Handle different content types appropriately
+			contentType := string(c.Request().Header.ContentType())
+
+			if strings.Contains(contentType, "multipart/form-data") {
+				// For multipart form data (file uploads), don't print the raw binary data
+				fmt.Println("Request Body: [MULTIPART FORM DATA / FILE UPLOAD]")
+
+				// Optionally log form field names without values
+				form, err := c.MultipartForm()
+				if err == nil {
+					fields := make([]string, 0, len(form.Value))
+					for field := range form.Value {
+						fields = append(fields, field)
+					}
+
+					files := make([]string, 0, len(form.File))
+					for file := range form.File {
+						files = append(files, file)
+					}
+
+					if len(fields) > 0 {
+						fmt.Printf("  Form Fields: %s\n", strings.Join(fields, ", "))
+					}
+					if len(files) > 0 {
+						fmt.Printf("  File Fields: %s\n", strings.Join(files, ", "))
+					}
+				}
+			} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+				// For URL-encoded form data, print field names and values
+				fmt.Println("Request Body: [URL-ENCODED FORM DATA]")
+
+				// Parse form data
+				form := c.Context().QueryArgs()
+				form.VisitAll(func(key, value []byte) {
+					fmt.Printf("  %s: %s\n", string(key), string(value))
+				})
+			} else {
+				// For JSON and other content types, use the formatJSON function
+				fmt.Printf("Request Body: %s\n", formatJSON(reqBody))
+			}
 		} else if reqBody != "" && isSensitiveRoute {
 			fmt.Println("Request Body: [REDACTED - SENSITIVE DATA]")
 		}

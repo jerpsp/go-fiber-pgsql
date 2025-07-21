@@ -28,7 +28,7 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 		}
 	}
 
-	users, total, err := h.service.GetAllUsers(pagination.Page, pagination.Limit)
+	users, total, err := h.service.GetAllUsers(c, pagination.Page, pagination.Limit)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -55,7 +55,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
 
-	user, err := h.service.GetUserByID(id)
+	user, err := h.service.GetUserByID(c, id)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -64,7 +64,8 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
-	var user UserRequest
+	file, _ := c.FormFile("profile_image")
+	var user UserCreateRequest
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
@@ -73,7 +74,7 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
-	createdUser, err := h.service.CreateUser(user)
+	createdUser, err := h.service.CreateUser(c, user, file)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -97,7 +98,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
-	if err := h.service.UpdateUser(id, &user); err != nil {
+	if err := h.service.UpdateUser(c, id, &user); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -110,7 +111,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
 
-	if err := h.service.DeleteUser(id); err != nil {
+	if err := h.service.DeleteUser(c, id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -133,7 +134,7 @@ func (h *UserHandler) UpdateUserRole(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
-	if err := h.service.UpdateUserRole(id, UserRole(roleUpdate.Role)); err != nil {
+	if err := h.service.UpdateUserRole(c, id, UserRole(roleUpdate.Role)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
