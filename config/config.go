@@ -45,8 +45,12 @@ func InitConfig() *Config {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	// Try to read from config file, but don't panic if not found (for cloud environments)
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		// Only panic if we're in development mode and config file is missing
+		if strings.ToLower(viper.GetString("ENV")) == "development" {
+			panic(err)
+		}
 	}
 
 	if err := viper.Unmarshal(&server); err != nil {

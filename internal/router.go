@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -49,5 +50,11 @@ func StartServer(cfg *config.Config, bookHandler *book.BookHandler,
 	book.RegisterRoutes(cfg, apiV1, bookHandler)
 	user.RegisterRoutes(cfg, apiV1, userHandler)
 
-	app.Listen(fmt.Sprintf(":%s", strconv.Itoa(cfg.Server.Port)))
+	// Use PORT from environment if available, otherwise use config
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = strconv.Itoa(cfg.Server.Port)
+	}
+
+	app.Listen(fmt.Sprintf(":%s", port))
 }
