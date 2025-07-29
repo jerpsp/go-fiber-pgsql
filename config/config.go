@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"strings"
 	"time"
 
@@ -40,12 +39,7 @@ func InitConfig() *Config {
 	var redis database.RedisConfig
 	var aws storage.AWSConfig
 
-	env := os.Getenv("APP_ENV")
-	if env == "" {
-		env = "dev"
-	}
-
-	viper.SetConfigName(env)
+	viper.SetConfigName("dev")
 	viper.SetConfigType("env")
 	viper.AddConfigPath("environments")
 	viper.AutomaticEnv()

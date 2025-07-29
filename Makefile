@@ -11,7 +11,7 @@ logs:
 	docker logs -f go-fiber-api
 
 rebuild:
-	docker compose build --no-cache
+	docker build -t go-fiber-api .
 
 reset:
 	make drop && make create && make migrate && make seed
