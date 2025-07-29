@@ -1,0 +1,42 @@
+name: Go Fiber CI/CD
+
+on:
+  push:
+    branches: [deploy/railway]
+  pull_request:
+    branches: [deploy/railway]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Test
+        run: go test -v ./...
+
+  deploy:
+    name: Deploy to Railway
+    needs: test
+    # if: github.event_name == 'push' && (github.ref == 'refs/heads/deploy/railway' || github.ref == 'refs/heads/deploy/railway')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
