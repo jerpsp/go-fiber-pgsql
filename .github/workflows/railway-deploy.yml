@@ -3,6 +3,8 @@ name: Go Fiber CI/CD
 on:
   push:
     branches: [deploy/railway]
+    tags:
+      - "v*"
   pull_request:
     branches: [deploy/railway]
 
