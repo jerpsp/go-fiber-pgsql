@@ -26,7 +26,7 @@ Go Fiber API with PostgreSQL, Redis and MinIO integration.
 
 ```
 ENV=production
-SERVER_PORT=4000
+PORT=4000
 ALLOW_ORIGINS=*
 TIMEOUT=30s
 

@@ -12,7 +12,7 @@ import (
 type (
 	Server struct {
 		ENV          string        `mapstructure:"ENV" validate:"required"`
-		Port         int           `mapstructure:"SERVER_PORT" validate:"required"`
+		Port         int           `mapstructure:"PORT" validate:"required"`
 		Timeout      time.Duration `mapstructure:"TIMEOUT" validate:"required"`
 		AllowOrigins string        `mapstructure:"ALLOW_ORIGINS" validate:"required"`
 	}
