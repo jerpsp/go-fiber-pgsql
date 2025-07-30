@@ -26,4 +26,9 @@ migrate:
 	docker exec go-fiber-api go run cmd/cli/main.go dbAutoMigrate
 
 seed:
-	docker exec go-fiber-api go run cmd/cli/main.go dbSeed	
+	docker exec go-fiber-api go run cmd/cli/main.go dbSeed
+
+prod-tag:
+	git tag -d release_$(release) || true
+	git tag release_$(release)
+	git push origin release_$(release)
