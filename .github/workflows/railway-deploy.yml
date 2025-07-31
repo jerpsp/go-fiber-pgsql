@@ -1,0 +1,80 @@
+name: Go Fiber CI/CD
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "release_*"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Test
+        run: go test -v ./internal/api/...
+
+  docker-build-and-push:
+    name: Build and Push Docker Image
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/release_')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract tag name
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.production
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/go-fiber-api:${{ steps.tag.outputs.TAG }}
+          build-args: |
+            ENV=production
+
+      - name: Delete tag on failure
+        if: failure()
+        run: |
+          git push --delete origin ${{ steps.tag.outputs.TAG }}
+          echo "Build failed, tag deleted"
+
+  deploy:
+    name: Deploy to Railway
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --service go-fiber-pgsql
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

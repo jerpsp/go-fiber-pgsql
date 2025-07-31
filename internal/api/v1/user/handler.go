@@ -66,11 +66,12 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	file, _ := c.FormFile("profile_image")
 	var user UserCreateRequest
+	// fmt.Println("user create request body:", string(c.Body()))
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if err := utils.Validate(user); err != nil {
+	if err := utils.Validate(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
@@ -94,7 +95,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if err := utils.GetValidator().Struct(&user); err != nil {
+	if err := utils.Validate(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
@@ -130,7 +131,7 @@ func (h *UserHandler) UpdateUserRole(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if err := utils.GetValidator().Struct(&roleUpdate); err != nil {
+	if err := utils.Validate(&roleUpdate); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
 	}
 
