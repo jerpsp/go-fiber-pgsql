@@ -9,7 +9,7 @@ type UserCreateRequest struct {
 }
 
 type UserUpdateRequest struct {
-	FirstName string `json:"first_name" form:"first_name" validate:"omitempty"`
+	FirstName string `json:"first_name" form:"first_name" validate:"required"`
 	LastName  string `json:"last_name" form:"last_name" validate:"omitempty"`
 }
 

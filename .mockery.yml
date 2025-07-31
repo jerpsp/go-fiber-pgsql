@@ -1,0 +1,19 @@
+all: false
+dir: "./mocks"
+filename: "{{.StructName}}.go"
+force-file-write: true
+formatter: goimports
+include-auto-generated: false
+log-level: info
+structname: "{{.InterfaceName}}"
+pkgname: "mocks"
+recursive: false
+require-template-schema-exists: true
+template: testify
+packages:
+  github.com/jerpsp/go-fiber-beginner/internal/api/v1/user:
+    config:
+      all: true
+  github.com/jerpsp/go-fiber-beginner/pkg/storage:
+    config:
+      all: true
