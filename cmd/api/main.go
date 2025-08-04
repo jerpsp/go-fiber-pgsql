@@ -10,6 +10,7 @@ import (
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/book"
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/user"
 	"github.com/jerpsp/go-fiber-beginner/pkg/database"
+	"github.com/jerpsp/go-fiber-beginner/pkg/email"
 	"github.com/jerpsp/go-fiber-beginner/pkg/storage"
 )
 
@@ -20,18 +21,18 @@ func main() {
 	// Initialize database connection
 	db := database.NewGormDB(cfg.PostgresDB)
 	redis := database.NewRedisClient(cfg.Redis)
+	fmt.Println("Redis Ping:", redis.Client.Ping(context.Background()))
 
 	s3Client := storage.NewS3Client(cfg.AWS)
 	s3Repo := storage.NewS3Repo(s3Client)
-
-	fmt.Println(redis.Client.Ping(context.Background()))
+	emailRepo := email.NewEmailRepo(cfg.Email)
 
 	bookRepo := book.NewBookRepository(cfg, db)
 	bookService := book.NewBookService(cfg, bookRepo)
 	bookHandler := book.NewBookHandler(cfg, bookService)
 
 	userRepo := user.NewUserRepository(cfg, db)
-	userService := user.NewUserService(cfg, userRepo, s3Repo)
+	userService := user.NewUserService(cfg, userRepo, s3Repo, emailRepo)
 	userHandler := user.NewUserHandler(cfg, userService)
 
 	tokenRepo := auth.NewAuthRepository(cfg, db, redis)

@@ -17,15 +17,18 @@ const (
 )
 
 type User struct {
-	ID           uuid.UUID `gorm:"primaryKey;type:uuid; default:uuid_generate_v4()" json:"id"`
-	Email        string    `gorm:"size:255;uniqueIndex" json:"email"`
-	Password     string    `gorm:"size:255" json:"-"`
-	FirstName    string    `gorm:"size:100" json:"first_name"`
-	LastName     string    `gorm:"size:100" json:"last_name"`
-	Role         UserRole  `gorm:"size:20;default:'user'" json:"role"`
-	ProfileImage string    `gorm:"size:255" json:"profile_image"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID                  uuid.UUID `gorm:"primaryKey;type:uuid; default:uuid_generate_v4()" json:"id"`
+	Email               string    `gorm:"size:255;uniqueIndex" json:"email"`
+	Password            string    `gorm:"size:255" json:"-"`
+	FirstName           string    `gorm:"size:100" json:"first_name"`
+	LastName            string    `gorm:"size:100" json:"last_name"`
+	Role                UserRole  `gorm:"size:20;default:'user'" json:"role"`
+	Active              bool      `gorm:"default:true" json:"active"`
+	ResetPasswordToken  string    `gorm:"size:255" json:"reset_password_token"`
+	ResetPasswordSentAt time.Time `json:"reset_password_sent_at"`
+	ProfileImage        string    `gorm:"size:255" json:"profile_image"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 func (u *User) HashPassword(password string) error {

@@ -171,6 +171,63 @@ func (_c *UserService_DeleteUser_Call) RunAndReturn(run func(c *fiber.Ctx, userI
 	return _c
 }
 
+// ForgotPassword provides a mock function for the type UserService
+func (_mock *UserService) ForgotPassword(c *fiber.Ctx, email string) error {
+	ret := _mock.Called(c, email)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ForgotPassword")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*fiber.Ctx, string) error); ok {
+		r0 = returnFunc(c, email)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserService_ForgotPassword_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ForgotPassword'
+type UserService_ForgotPassword_Call struct {
+	*mock.Call
+}
+
+// ForgotPassword is a helper method to define mock.On call
+//   - c *fiber.Ctx
+//   - email string
+func (_e *UserService_Expecter) ForgotPassword(c interface{}, email interface{}) *UserService_ForgotPassword_Call {
+	return &UserService_ForgotPassword_Call{Call: _e.mock.On("ForgotPassword", c, email)}
+}
+
+func (_c *UserService_ForgotPassword_Call) Run(run func(c *fiber.Ctx, email string)) *UserService_ForgotPassword_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *fiber.Ctx
+		if args[0] != nil {
+			arg0 = args[0].(*fiber.Ctx)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserService_ForgotPassword_Call) Return(err error) *UserService_ForgotPassword_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserService_ForgotPassword_Call) RunAndReturn(run func(c *fiber.Ctx, email string) error) *UserService_ForgotPassword_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAllUsers provides a mock function for the type UserService
 func (_mock *UserService) GetAllUsers(c *fiber.Ctx, page int, limit int) ([]user.User, int64, error) {
 	ret := _mock.Called(c, page, limit)
@@ -315,6 +372,69 @@ func (_c *UserService_GetUserByID_Call) Return(user1 *user.User, err error) *Use
 }
 
 func (_c *UserService_GetUserByID_Call) RunAndReturn(run func(c *fiber.Ctx, userID uuid.UUID) (*user.User, error)) *UserService_GetUserByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ResetPassword provides a mock function for the type UserService
+func (_mock *UserService) ResetPassword(c *fiber.Ctx, resetPasswordToken string, newPassword string) error {
+	ret := _mock.Called(c, resetPasswordToken, newPassword)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResetPassword")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*fiber.Ctx, string, string) error); ok {
+		r0 = returnFunc(c, resetPasswordToken, newPassword)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserService_ResetPassword_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResetPassword'
+type UserService_ResetPassword_Call struct {
+	*mock.Call
+}
+
+// ResetPassword is a helper method to define mock.On call
+//   - c *fiber.Ctx
+//   - resetPasswordToken string
+//   - newPassword string
+func (_e *UserService_Expecter) ResetPassword(c interface{}, resetPasswordToken interface{}, newPassword interface{}) *UserService_ResetPassword_Call {
+	return &UserService_ResetPassword_Call{Call: _e.mock.On("ResetPassword", c, resetPasswordToken, newPassword)}
+}
+
+func (_c *UserService_ResetPassword_Call) Run(run func(c *fiber.Ctx, resetPasswordToken string, newPassword string)) *UserService_ResetPassword_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *fiber.Ctx
+		if args[0] != nil {
+			arg0 = args[0].(*fiber.Ctx)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserService_ResetPassword_Call) Return(err error) *UserService_ResetPassword_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserService_ResetPassword_Call) RunAndReturn(run func(c *fiber.Ctx, resetPasswordToken string, newPassword string) error) *UserService_ResetPassword_Call {
 	_c.Call.Return(run)
 	return _c
 }

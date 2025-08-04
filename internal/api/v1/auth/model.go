@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/pkg/utils"
-	"gorm.io/gorm"
 )
 
 type Token struct {
@@ -16,11 +15,4 @@ type Token struct {
 	ExpiresAt time.Time       `gorm:"not null" json:"expires_at"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
-}
-
-func (r *Token) BeforeCreate(tx *gorm.DB) error {
-	go func() {
-		tx.Where("expires_at < ?", time.Now()).Delete(&Token{})
-	}()
-	return nil
 }

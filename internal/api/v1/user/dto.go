@@ -29,3 +29,12 @@ type PaginatedResponse struct {
 	PerPage    int    `json:"per_page"`
 	TotalPages int    `json:"total_pages"`
 }
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type ResetPasswordRequest struct {
+	ResetPasswordToken string `json:"reset_password_token" validate:"required"`
+	NewPassword        string `json:"new_password" validate:"required"`
+}

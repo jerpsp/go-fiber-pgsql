@@ -141,3 +141,41 @@ func (h *UserHandler) UpdateUserRole(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "User role updated successfully"})
 }
+
+func (h *UserHandler) ForgotPassword(c *fiber.Ctx) error {
+	var req ForgotPasswordRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if err := utils.Validate(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+	}
+
+	err := h.service.ForgotPassword(c, req.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "Password reset email sent successfully"})
+}
+
+func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
+	var req ResetPasswordRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if err := utils.Validate(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+	}
+
+	err := h.service.ResetPassword(c, req.ResetPasswordToken, req.NewPassword)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "Password reset successfully"})
+}

@@ -9,6 +9,8 @@ import (
 func RegisterRoutes(cfg *config.Config, router fiber.Router, handler *UserHandler) {
 	userRouter := router.Group("/users")
 	{
+		userRouter.Post("/forgot-password", handler.ForgotPassword)
+		userRouter.Patch("/reset-password", handler.ResetPassword)
 		userRouter.Get("", middleware.JWTMiddleware(cfg), middleware.AdminOnly(), handler.GetAllUsers)
 		userRouter.Get("/:id", middleware.JWTMiddleware(cfg), handler.GetUserByID)
 		userRouter.Post("", middleware.JWTMiddleware(cfg), middleware.AdminOnly(), handler.CreateUser)

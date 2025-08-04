@@ -44,6 +44,8 @@ func (s *UserHandlerSuite) SetupTest() {
 	// User
 	userGroup := s.router.Group("api/v1/users")
 	{
+		userGroup.Post("/forgot-password", s.userHandler.ForgotPassword)
+		userGroup.Patch("/reset-password", s.userHandler.ResetPassword)
 		userGroup.Get("", s.userHandler.GetAllUsers)
 		userGroup.Get("/:id", s.userHandler.GetUserByID)
 		userGroup.Post("", s.userHandler.CreateUser)
@@ -478,6 +480,165 @@ func (s *UserHandlerSuite) TestUpdateUserRole4() {
 	// Setup Request
 	reqBodyBytes, _ := json.Marshal(roleUpdate)
 	req, _ := http.NewRequest("PATCH", fmt.Sprintf("/api/v1/users/%s/role", userID), bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusInternalServerError, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestForgotPassword1() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Success", 34)
+
+	// Setup Mock
+	email := "test@example.com"
+	s.mockUserSvc.EXPECT().ForgotPassword(mock.Anything, email).Return(nil)
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"email": email})
+	req, _ := http.NewRequest("POST", "/api/v1/users/forgot-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Password reset email sent successfully"})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusOK, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestForgotPassword2() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Validation Fail", 31)
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"email": "invalid-email"})
+	req, _ := http.NewRequest("POST", "/api/v1/users/forgot-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{
+		"details": "validation error: field 'Email' failed on the 'email' tag",
+		"error":   "Validation failed",
+	})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusBadRequest, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+func (s *UserHandlerSuite) TestForgotPassword3() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Validation Required Fail", 31)
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"email": ""})
+	req, _ := http.NewRequest("POST", "/api/v1/users/forgot-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{
+		"details": "validation error: field 'Email' failed on the 'required' tag",
+		"error":   "Validation failed",
+	})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusBadRequest, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestForgotPassword4() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Internal Server Error", 31)
+
+	// Setup Mock
+	email := "test@example.com"
+	s.mockUserSvc.EXPECT().ForgotPassword(mock.Anything, email).Return(fmt.Errorf("internal server error"))
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"email": email})
+	req, _ := http.NewRequest("POST", "/api/v1/users/forgot-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusInternalServerError, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestResetPassword1() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Success", 34)
+
+	// Setup Mock
+	resetToken := uuid.New().String()
+	newPassword := "newpassword"
+	s.mockUserSvc.EXPECT().ResetPassword(mock.Anything, resetToken, newPassword).Return(nil)
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"reset_password_token": resetToken, "new_password": newPassword})
+	req, _ := http.NewRequest("PATCH", "/api/v1/users/reset-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Password reset successfully"})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusOK, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestResetPassword2() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Validation Fail", 31)
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"reset_password_token": "", "new_password": "newpassword"})
+	req, _ := http.NewRequest("PATCH", "/api/v1/users/reset-password", bytes.NewBuffer(reqBodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Run Test Request
+	resp, _ := s.router.Test(req)
+
+	expectedResp, _ := json.Marshal(fiber.Map{
+		"details": "validation error: field 'ResetPasswordToken' failed on the 'required' tag",
+		"error":   "Validation failed",
+	})
+	actualResp, _ := io.ReadAll(resp.Body)
+
+	s.Equal(http.StatusBadRequest, resp.StatusCode)
+	s.Equal(string(expectedResp), string(actualResp))
+}
+
+func (s *UserHandlerSuite) TestResetPassword3() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Internal Server Error", 31)
+
+	// Setup Mock
+	resetToken := uuid.New().String()
+	newPassword := "newpassword"
+	s.mockUserSvc.EXPECT().ResetPassword(mock.Anything, resetToken, newPassword).Return(fmt.Errorf("internal server error"))
+
+	// Setup Request
+	reqBodyBytes, _ := json.Marshal(fiber.Map{"reset_password_token": resetToken, "new_password": newPassword})
+	req, _ := http.NewRequest("PATCH", "/api/v1/users/reset-password", bytes.NewBuffer(reqBodyBytes))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Run Test Request

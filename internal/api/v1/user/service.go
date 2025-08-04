@@ -5,10 +5,12 @@ import (
 	"mime/multipart"
 	"path"
 	"slices"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/config"
+	"github.com/jerpsp/go-fiber-beginner/pkg/email"
 	"github.com/jerpsp/go-fiber-beginner/pkg/storage"
 )
 
@@ -19,16 +21,19 @@ type UserService interface {
 	UpdateUser(c *fiber.Ctx, userID uuid.UUID, userParams *UserUpdateRequest) error
 	DeleteUser(c *fiber.Ctx, userID uuid.UUID) error
 	UpdateUserRole(c *fiber.Ctx, userID uuid.UUID, role UserRole) error
+	ForgotPassword(c *fiber.Ctx, email string) error
+	ResetPassword(c *fiber.Ctx, resetPasswordToken string, newPassword string) error
 }
 
 type userService struct {
-	config *config.Config
-	repo   UserRepository
-	s3Repo storage.S3Repository
+	config    *config.Config
+	repo      UserRepository
+	s3Repo    storage.S3Repository
+	emailRepo email.EmailRepository
 }
 
-func NewUserService(config *config.Config, repo UserRepository, s3Repo storage.S3Repository) UserService {
-	return &userService{config: config, repo: repo, s3Repo: s3Repo}
+func NewUserService(config *config.Config, repo UserRepository, s3Repo storage.S3Repository, emailRepo email.EmailRepository) UserService {
+	return &userService{config: config, repo: repo, s3Repo: s3Repo, emailRepo: emailRepo}
 }
 
 func (s *userService) GetAllUsers(c *fiber.Ctx, page, limit int) ([]User, int64, error) {
@@ -123,4 +128,60 @@ func (s *userService) UpdateUserRole(c *fiber.Ctx, userID uuid.UUID, role UserRo
 		Role: role,
 	}
 	return s.repo.UpdateUser(c, userID, user)
+}
+
+func (s *userService) ForgotPassword(c *fiber.Ctx, email string) error {
+	currentUser, err := s.repo.FindUserByEmail(c, email)
+	if err != nil {
+		return err
+	}
+
+	resetToken := uuid.New()
+
+	user := &User{ResetPasswordToken: resetToken.String(), ResetPasswordSentAt: time.Now().UTC()}
+
+	if err := s.repo.UpdateUser(c, currentUser.ID, user); err != nil {
+		return err
+	}
+
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", s.config.Email.ResetPasswordURL, resetToken.String())
+
+	formattedExpiresAt := fmt.Sprintf("%d minutes", s.config.Email.ResetPasswordExpiresIn/60)
+
+	if err := s.emailRepo.SendEmail(
+		email,
+		"Password Reset",
+		"reset_password",
+		map[string]interface{}{
+			"FirstName": currentUser.FirstName,
+			"ResetURL":  resetURL,
+			"ExpiresAt": formattedExpiresAt,
+			"Year":      time.Now().Year(),
+		},
+	); err != nil {
+		return fmt.Errorf("failed to send reset password email: %w", err)
+	}
+
+	return nil
+}
+
+func (s *userService) ResetPassword(c *fiber.Ctx, resetPasswordToken string, newPassword string) error {
+	expiresAt := time.Now().UTC().Add(-time.Duration(s.config.Email.ResetPasswordExpiresIn) * time.Second) // 2 days
+	user, err := s.repo.FindUserByResetPasswordToken(c, resetPasswordToken, expiresAt)
+	if err != nil {
+		return err
+	}
+
+	if err := user.HashPassword(newPassword); err != nil {
+		return err
+	}
+
+	user.ResetPasswordToken = ""
+	user.ResetPasswordSentAt = time.Time{}
+
+	if err := s.repo.UpdateUser(c, user.ID, user); err != nil {
+		return err
+	}
+
+	return nil
 }

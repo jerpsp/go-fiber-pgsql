@@ -25,7 +25,7 @@ type LoggerConfig struct {
 // DefaultLoggerConfig returns the default logger configuration
 func DefaultLoggerConfig() LoggerConfig {
 	return LoggerConfig{
-		SkipSensitiveRoutes: []string{"/api/v1/auth/signin", "/api/v1/auth/signup", "/api/v1/auth/refresh"},
+		SkipSensitiveRoutes: []string{"/api/v1/auth/signin", "/api/v1/auth/signup", "/api/v1/auth/refresh", "/api/v1/users/reset-password"},
 	}
 }
 

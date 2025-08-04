@@ -21,6 +21,7 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			FirstName: "admin",
 			LastName:  "admin",
 			Role:      user.RoleAdmin,
+			Active:    true,
 		},
 		{
 			Email:     "moderator@email.com",
@@ -28,6 +29,7 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			FirstName: "moderator",
 			LastName:  "moderator",
 			Role:      user.RoleModerator,
+			Active:    true,
 		},
 		{
 			Email:     "john.doe@email.com",
@@ -35,6 +37,7 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			FirstName: "John",
 			LastName:  "Doe",
 			Role:      user.RoleUser,
+			Active:    true,
 		},
 		{
 			Email:     "jane.doe@email.com",
@@ -42,6 +45,7 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			FirstName: "Jane",
 			LastName:  "Doe",
 			Role:      user.RoleUser,
+			Active:    true,
 		},
 	}
 

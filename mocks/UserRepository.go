@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/user"
@@ -375,6 +377,80 @@ func (_c *UserRepository_FindUserByID_Call) Return(user1 *user.User, err error) 
 }
 
 func (_c *UserRepository_FindUserByID_Call) RunAndReturn(run func(c *fiber.Ctx, userID uuid.UUID) (*user.User, error)) *UserRepository_FindUserByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindUserByResetPasswordToken provides a mock function for the type UserRepository
+func (_mock *UserRepository) FindUserByResetPasswordToken(c *fiber.Ctx, token string, expiresAt time.Time) (*user.User, error) {
+	ret := _mock.Called(c, token, expiresAt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindUserByResetPasswordToken")
+	}
+
+	var r0 *user.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(*fiber.Ctx, string, time.Time) (*user.User, error)); ok {
+		return returnFunc(c, token, expiresAt)
+	}
+	if returnFunc, ok := ret.Get(0).(func(*fiber.Ctx, string, time.Time) *user.User); ok {
+		r0 = returnFunc(c, token, expiresAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*user.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(*fiber.Ctx, string, time.Time) error); ok {
+		r1 = returnFunc(c, token, expiresAt)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepository_FindUserByResetPasswordToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindUserByResetPasswordToken'
+type UserRepository_FindUserByResetPasswordToken_Call struct {
+	*mock.Call
+}
+
+// FindUserByResetPasswordToken is a helper method to define mock.On call
+//   - c *fiber.Ctx
+//   - token string
+//   - expiresAt time.Time
+func (_e *UserRepository_Expecter) FindUserByResetPasswordToken(c interface{}, token interface{}, expiresAt interface{}) *UserRepository_FindUserByResetPasswordToken_Call {
+	return &UserRepository_FindUserByResetPasswordToken_Call{Call: _e.mock.On("FindUserByResetPasswordToken", c, token, expiresAt)}
+}
+
+func (_c *UserRepository_FindUserByResetPasswordToken_Call) Run(run func(c *fiber.Ctx, token string, expiresAt time.Time)) *UserRepository_FindUserByResetPasswordToken_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *fiber.Ctx
+		if args[0] != nil {
+			arg0 = args[0].(*fiber.Ctx)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_FindUserByResetPasswordToken_Call) Return(user1 *user.User, err error) *UserRepository_FindUserByResetPasswordToken_Call {
+	_c.Call.Return(user1, err)
+	return _c
+}
+
+func (_c *UserRepository_FindUserByResetPasswordToken_Call) RunAndReturn(run func(c *fiber.Ctx, token string, expiresAt time.Time) (*user.User, error)) *UserRepository_FindUserByResetPasswordToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

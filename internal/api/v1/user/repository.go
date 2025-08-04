@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/config"
@@ -11,6 +13,7 @@ type UserRepository interface {
 	FindAllUsers(c *fiber.Ctx, page, perPage int) ([]User, int64, error)
 	FindUserByID(c *fiber.Ctx, userID uuid.UUID) (*User, error)
 	FindUserByEmail(c *fiber.Ctx, email string) (*User, error)
+	FindUserByResetPasswordToken(c *fiber.Ctx, token string, expiresAt time.Time) (*User, error)
 	CreateUser(c *fiber.Ctx, user *User) (*User, error)
 	UpdateUser(c *fiber.Ctx, userID uuid.UUID, user *User) error
 	DeleteUser(c *fiber.Ctx, userID uuid.UUID) error
@@ -54,6 +57,14 @@ func (r *userRepository) FindUserByID(c *fiber.Ctx, userID uuid.UUID) (*User, er
 func (r *userRepository) FindUserByEmail(c *fiber.Ctx, email string) (*User, error) {
 	var user User
 	if err := r.db.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepository) FindUserByResetPasswordToken(c *fiber.Ctx, token string, expiresAt time.Time) (*User, error) {
+	var user User
+	if err := r.db.DB.Where("reset_password_token = ? AND reset_password_sent_at >= ?", token, expiresAt).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

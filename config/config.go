@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jerpsp/go-fiber-beginner/pkg/database"
+	"github.com/jerpsp/go-fiber-beginner/pkg/email"
 	"github.com/jerpsp/go-fiber-beginner/pkg/storage"
 	"github.com/spf13/viper"
 )
@@ -29,6 +30,7 @@ type (
 		JWT        *JWT                     `mapstructure:"jwt" validate:"required"`
 		Redis      *database.RedisConfig    `mapstructure:"redis" validate:"required"`
 		AWS        *storage.AWSConfig       `mapstructure:"aws" validate:"required"`
+		Email      *email.EmailConfig       `mapstructure:"email" validate:"required"`
 	}
 )
 
@@ -38,6 +40,7 @@ func InitConfig() *Config {
 	var jwt JWT
 	var redis database.RedisConfig
 	var aws storage.AWSConfig
+	var email email.EmailConfig
 
 	viper.SetConfigName("dev")
 	viper.SetConfigType("env")
@@ -68,7 +71,12 @@ func InitConfig() *Config {
 	if err := viper.Unmarshal(&redis); err != nil {
 		panic(err)
 	}
+
 	if err := viper.Unmarshal(&aws); err != nil {
+		panic(err)
+	}
+
+	if err := viper.Unmarshal(&email); err != nil {
 		panic(err)
 	}
 
@@ -78,6 +86,7 @@ func InitConfig() *Config {
 		JWT:        &jwt,
 		Redis:      &redis,
 		AWS:        &aws,
+		Email:      &email,
 	}
 
 	return cfg

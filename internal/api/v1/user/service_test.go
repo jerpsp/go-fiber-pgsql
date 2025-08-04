@@ -3,12 +3,14 @@ package user_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jerpsp/go-fiber-beginner/config"
 	"github.com/jerpsp/go-fiber-beginner/internal/api/v1/user"
 	"github.com/jerpsp/go-fiber-beginner/mocks"
+	"github.com/jerpsp/go-fiber-beginner/pkg/email"
 	"github.com/jerpsp/go-fiber-beginner/pkg/utils"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -18,6 +20,7 @@ type UserServiceSuite struct {
 	suite.Suite
 	mockRepo    *mocks.UserRepository
 	mockStorage *mocks.S3Repository
+	mockEmail   *mocks.EmailRepository
 	service     user.UserService
 }
 
@@ -27,7 +30,8 @@ func TestUserServiceSuite(t *testing.T) {
 func (s *UserServiceSuite) SetupTest() {
 	s.mockRepo = mocks.NewUserRepository(s.T())
 	s.mockStorage = mocks.NewS3Repository(s.T())
-	s.service = user.NewUserService(&config.Config{}, s.mockRepo, s.mockStorage)
+	s.mockEmail = mocks.NewEmailRepository(s.T())
+	s.service = user.NewUserService(&config.Config{Email: &email.EmailConfig{ResetPasswordURL: "http://localhost:3000", ResetPasswordExpiresIn: 1800}}, s.mockRepo, s.mockStorage, s.mockEmail)
 }
 
 func (s *UserServiceSuite) TestGetAllUsers1() {
@@ -225,4 +229,134 @@ func (s *UserServiceSuite) TestUpdateUserRole1() {
 	s.NoError(err)
 }
 
-// TODO: TEST Upload File
+func (s *UserServiceSuite) TestForgotPassword1() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Success", 34)
+
+	// Setup Mock
+	email := "john.doe@example.com"
+	userResponse := user.User{ID: uuid.New(), Email: email, FirstName: "John", LastName: "Doe", Role: user.RoleUser}
+	s.mockRepo.EXPECT().FindUserByEmail(mock.Anything, email).Return(&userResponse, nil)
+	s.mockRepo.EXPECT().UpdateUser(mock.Anything, userResponse.ID, mock.Anything).Return(nil)
+	s.mockEmail.EXPECT().SendEmail(email, "Password Reset", "reset_password", mock.Anything).Return(nil)
+
+	// Call the service method
+	err := s.service.ForgotPassword(&fiber.Ctx{}, email)
+
+	// Assertions
+	s.NoError(err)
+}
+
+func (s *UserServiceSuite) TestForgotPassword2() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Fail FindUserByEmail", 34)
+
+	// Setup Mock
+	email := "john.doe@example.com"
+	s.mockRepo.EXPECT().FindUserByEmail(mock.Anything, email).Return(nil, fmt.Errorf("any error"))
+
+	// Call the service method
+	err := s.service.ForgotPassword(&fiber.Ctx{}, email)
+
+	// Assertions
+	s.Error(err)
+}
+
+func (s *UserServiceSuite) TestForgotPassword3() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Fail UpdateUser", 34)
+
+	// Setup Mock
+	email := "john.doe@example.com"
+	userResponse := user.User{ID: uuid.New(), Email: email, FirstName: "John", LastName: "Doe", Role: user.RoleUser}
+	s.mockRepo.EXPECT().FindUserByEmail(mock.Anything, email).Return(&userResponse, nil)
+	s.mockRepo.EXPECT().UpdateUser(mock.Anything, userResponse.ID, mock.Anything).Return(fmt.Errorf("any error"))
+
+	// Call the service method
+	err := s.service.ForgotPassword(&fiber.Ctx{}, email)
+
+	// Assertions
+	s.Error(err)
+}
+
+func (s *UserServiceSuite) TestForgotPassword4() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Forgot Password Fail SendEmail", 34)
+
+	// Setup Mock
+	email := "john.doe@example.com"
+	userResponse := user.User{ID: uuid.New(), Email: email, FirstName: "John", LastName: "Doe", Role: user.RoleUser}
+	s.mockRepo.EXPECT().FindUserByEmail(mock.Anything, email).Return(&userResponse, nil)
+	s.mockRepo.EXPECT().UpdateUser(mock.Anything, userResponse.ID, mock.Anything).Return(nil)
+	s.mockEmail.EXPECT().SendEmail(email, "Password Reset", "reset_password", mock.Anything).Return(fmt.Errorf("any error"))
+
+	// Call the service method
+	err := s.service.ForgotPassword(&fiber.Ctx{}, email)
+
+	// Assertions
+	s.Error(err)
+}
+
+func (s *UserServiceSuite) TestResetPassword1() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Success", 34)
+
+	// Setup Mock
+	token := uuid.New().String()
+	newPassword := "newpassword"
+	userResponse := &user.User{
+		ID:                  uuid.New(),
+		ResetPasswordToken:  token,
+		ResetPasswordSentAt: time.Now().UTC(),
+		Password:            "oldpassword",
+	}
+	s.mockRepo.EXPECT().FindUserByResetPasswordToken(mock.Anything, token, mock.Anything).Return(userResponse, nil)
+	s.mockRepo.EXPECT().UpdateUser(mock.Anything, userResponse.ID, mock.Anything).Return(nil)
+
+	// Call the service method
+	err := s.service.ResetPassword(&fiber.Ctx{}, token, newPassword)
+
+	// Assertions
+	s.NoError(err)
+}
+
+func (s *UserServiceSuite) TestResetPassword2() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Fail FindUserByResetPasswordToken", 34)
+
+	// Setup Mock
+	token := uuid.New().String()
+	newPassword := "newpassword"
+	s.mockRepo.EXPECT().FindUserByResetPasswordToken(mock.Anything, token, mock.Anything).Return(nil, fmt.Errorf("any error"))
+
+	// Call the service method
+	err := s.service.ResetPassword(&fiber.Ctx{}, token, newPassword)
+
+	// Assertions
+	s.Error(err)
+}
+
+func (s *UserServiceSuite) TestResetPassword3() {
+	// Case Name Print In Test
+	utils.ConsolePrintColoredText("CASE: Reset Password Fail UpdateUser", 34)
+
+	// Setup Mock
+	token := uuid.New().String()
+	newPassword := "newpassword"
+	userResponse := &user.User{
+		ID:                  uuid.New(),
+		ResetPasswordToken:  token,
+		ResetPasswordSentAt: time.Now().UTC(),
+		Password:            "oldpassword",
+	}
+	s.mockRepo.EXPECT().FindUserByResetPasswordToken(mock.Anything, token, mock.Anything).Return(userResponse, nil)
+	s.mockRepo.EXPECT().UpdateUser(mock.Anything, userResponse.ID, mock.Anything).Return(fmt.Errorf("any error"))
+
+	// Call the service method
+	err := s.service.ResetPassword(&fiber.Ctx{}, token, newPassword)
+
+	// Assertions
+	s.Error(err)
+}
+
+// TODO: Add Storage tests

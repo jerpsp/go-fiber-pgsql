@@ -17,3 +17,6 @@ packages:
   github.com/jerpsp/go-fiber-beginner/pkg/storage:
     config:
       all: true
+  github.com/jerpsp/go-fiber-beginner/pkg/email:
+    config:
+      all: true
