@@ -17,6 +17,7 @@ WORKDIR /app
 COPY --from=builder /app/api /app/api
 COPY --from=builder /app/task /app/task
 COPY environments /app/environments
+COPY pkg/email/templates /app/pkg/email/templates
 
 EXPOSE 4000
 CMD ["./api"]
