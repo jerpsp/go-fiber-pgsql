@@ -249,7 +249,7 @@ func (s *UserServiceSuite) TestForgotPassword1() {
 
 func (s *UserServiceSuite) TestForgotPassword2() {
 	// Case Name Print In Test
-	utils.ConsolePrintColoredText("CASE: Forgot Password Fail FindUserByEmail", 34)
+	utils.ConsolePrintColoredText("CASE: Forgot Password Success - User Not Found", 34)
 
 	// Setup Mock
 	email := "john.doe@example.com"
@@ -259,7 +259,7 @@ func (s *UserServiceSuite) TestForgotPassword2() {
 	err := s.service.ForgotPassword(&fiber.Ctx{}, email)
 
 	// Assertions
-	s.Error(err)
+	s.NoError(err)
 }
 
 func (s *UserServiceSuite) TestForgotPassword3() {

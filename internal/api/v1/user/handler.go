@@ -158,7 +158,7 @@ func (h *UserHandler) ForgotPassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "Password reset email sent successfully"})
+	return c.JSON(fiber.Map{"status": "success", "message": "Password reset email sent successfully"})
 }
 
 func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
@@ -177,5 +177,5 @@ func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "Password reset successfully"})
+	return c.JSON(fiber.Map{"status": "success", "message": "Password reset successfully"})
 }

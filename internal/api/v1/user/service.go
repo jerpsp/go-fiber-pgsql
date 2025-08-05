@@ -131,35 +131,31 @@ func (s *userService) UpdateUserRole(c *fiber.Ctx, userID uuid.UUID, role UserRo
 }
 
 func (s *userService) ForgotPassword(c *fiber.Ctx, email string) error {
-	currentUser, err := s.repo.FindUserByEmail(c, email)
-	if err != nil {
-		return err
-	}
-
 	resetToken := uuid.New()
-
-	user := &User{ResetPasswordToken: resetToken.String(), ResetPasswordSentAt: time.Now().UTC()}
-
-	if err := s.repo.UpdateUser(c, currentUser.ID, user); err != nil {
-		return err
-	}
-
 	resetURL := fmt.Sprintf("%s/reset-password?token=%s", s.config.Email.ResetPasswordURL, resetToken.String())
-
 	formattedExpiresAt := fmt.Sprintf("%d minutes", s.config.Email.ResetPasswordExpiresIn/60)
 
-	if err := s.emailRepo.SendEmail(
-		email,
-		"Password Reset",
-		"reset_password",
-		map[string]interface{}{
-			"FirstName": currentUser.FirstName,
-			"ResetURL":  resetURL,
-			"ExpiresAt": formattedExpiresAt,
-			"Year":      time.Now().Year(),
-		},
-	); err != nil {
-		return fmt.Errorf("failed to send reset password email: %w", err)
+	currentUser, err := s.repo.FindUserByEmail(c, email)
+
+	if err == nil && currentUser != nil {
+		user := &User{ResetPasswordToken: resetToken.String(), ResetPasswordSentAt: time.Now().UTC()}
+
+		if err := s.repo.UpdateUser(c, currentUser.ID, user); err != nil {
+			return err
+		}
+
+		if err := s.emailRepo.SendEmail(
+			email,
+			"Password Reset",
+			"reset_password",
+			map[string]interface{}{
+				"ResetURL":  resetURL,
+				"ExpiresAt": formattedExpiresAt,
+				"Year":      time.Now().Year(),
+			},
+		); err != nil {
+			return fmt.Errorf("failed to send reset password email: %w", err)
+		}
 	}
 
 	return nil

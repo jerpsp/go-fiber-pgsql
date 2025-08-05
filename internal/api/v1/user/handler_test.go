@@ -508,7 +508,7 @@ func (s *UserHandlerSuite) TestForgotPassword1() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"message": "Password reset email sent successfully"})
+	expectedResp, _ := json.Marshal(fiber.Map{"status": "success", "message": "Password reset email sent successfully"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusOK, resp.StatusCode)
@@ -598,7 +598,7 @@ func (s *UserHandlerSuite) TestResetPassword1() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"message": "Password reset successfully"})
+	expectedResp, _ := json.Marshal(fiber.Map{"status": "success", "message": "Password reset successfully"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusOK, resp.StatusCode)
