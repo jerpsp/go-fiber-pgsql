@@ -29,6 +29,13 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			LastName:  "moderator",
 			Role:      user.RoleModerator,
 		},
+		{
+			Email:     "jeerapongsanpo@gmail.com",
+			Password:  string(hashedPassword),
+			FirstName: "Jeerapong",
+			LastName:  "Sanpo",
+			Role:      user.RoleUser,
+		},
 	}
 
 	pool.DB.Save(users)
