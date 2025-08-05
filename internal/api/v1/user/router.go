@@ -11,7 +11,7 @@ func RegisterRoutes(cfg *config.Config, router fiber.Router, handler *UserHandle
 	{
 		userRouter.Post("/forgot-password", handler.ForgotPassword)
 		userRouter.Patch("/reset-password", handler.ResetPassword)
-		userRouter.Get("", middleware.JWTMiddleware(cfg), middleware.AdminOnly(), handler.GetAllUsers)
+		userRouter.Get("", middleware.JWTMiddleware(cfg), middleware.ModeratorOrAdmin(), handler.GetAllUsers)
 		userRouter.Get("/:id", middleware.JWTMiddleware(cfg), handler.GetUserByID)
 		userRouter.Post("", middleware.JWTMiddleware(cfg), middleware.AdminOnly(), handler.CreateUser)
 		userRouter.Patch("/:id", middleware.JWTMiddleware(cfg), handler.UpdateUser)
