@@ -30,7 +30,7 @@ func CreateUser(cfg *config.Config, pool database.GormDB) error {
 			Role:      user.RoleModerator,
 		},
 		{
-			Email:     "jeerapongsanpo@gmail.com",
+			Email:     "jeerapong966@gmail.com",
 			Password:  string(hashedPassword),
 			FirstName: "Jeerapong",
 			LastName:  "Sanpo",

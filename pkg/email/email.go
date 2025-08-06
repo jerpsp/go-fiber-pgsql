@@ -50,8 +50,9 @@ func (m *emailRepo) SendEmail(to, subject, templateName string, data interface{}
 	// Prepare MIME message
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	fromHeader := fmt.Sprintf("From: %s <%s>\n", m.cfg.FromName, m.cfg.From)
+	toHeader := fmt.Sprintf("To: %s\n", to)
 	subjectHeader := "Subject: " + subject + "\n"
-	msg := []byte(fromHeader + subjectHeader + mime + body.String())
+	msg := []byte(fromHeader + toHeader + subjectHeader + mime + body.String())
 
 	// Authenticate if credentials are provided
 	var auth smtp.Auth
