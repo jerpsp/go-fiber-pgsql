@@ -20,7 +20,7 @@ func RoleAuthorization(allowedRoles ...UserRole) fiber.Handler {
 		role, ok := c.Locals("role").(string)
 		if !ok {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "Access denied: role information not found",
+				"message": "Access denied: role information not found",
 			})
 		}
 
@@ -37,7 +37,7 @@ func RoleAuthorization(allowedRoles ...UserRole) fiber.Handler {
 
 		if !hasAllowedRole {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "Access denied: insufficient permissions",
+				"message": "Access denied: insufficient permissions",
 			})
 		}
 

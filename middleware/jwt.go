@@ -14,14 +14,14 @@ func JWTMiddleware(cfg *config.Config) fiber.Handler {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Missing authorization header",
+				"message": "Missing authorization header",
 			})
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid authorization header format",
+				"message": "Invalid authorization header format",
 			})
 		}
 
@@ -41,7 +41,7 @@ func JWTMiddleware(cfg *config.Config) fiber.Handler {
 			}
 
 			return c.Status(status).JSON(fiber.Map{
-				"error": message,
+				"message": message,
 			})
 		}
 

@@ -115,7 +115,7 @@ func (s *UserHandlerSuite) TestGetUser2() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "Invalid ID format"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Invalid ID format"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -136,7 +136,7 @@ func (s *UserHandlerSuite) TestGetUser3() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "user not found"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "user not found"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusNotFound, resp.StatusCode)
@@ -194,7 +194,7 @@ func (s *UserHandlerSuite) TestCreateUser2() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'Email' failed on the 'email' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -224,7 +224,7 @@ func (s *UserHandlerSuite) TestCreateUser3() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal server error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -276,7 +276,7 @@ func (s *UserHandlerSuite) TestUpdateUser2() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "Invalid ID format"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Invalid ID format"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -302,7 +302,7 @@ func (s *UserHandlerSuite) TestUpdateUser3() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'FirstName' failed on the 'required' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -330,7 +330,7 @@ func (s *UserHandlerSuite) TestUpdateUser4() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal server error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -370,7 +370,7 @@ func (s *UserHandlerSuite) TestDeleteUser2() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "Invalid ID format"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Invalid ID format"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -391,7 +391,7 @@ func (s *UserHandlerSuite) TestDeleteUser3() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal Server Error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal Server Error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -437,7 +437,7 @@ func (s *UserHandlerSuite) TestUpdateUserRole2() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "Invalid ID format"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "Invalid ID format"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -460,7 +460,7 @@ func (s *UserHandlerSuite) TestUpdateUserRole3() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'Role' failed on the 'required' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -485,7 +485,7 @@ func (s *UserHandlerSuite) TestUpdateUserRole4() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal server error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -529,7 +529,7 @@ func (s *UserHandlerSuite) TestForgotPassword2() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'Email' failed on the 'email' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -550,7 +550,7 @@ func (s *UserHandlerSuite) TestForgotPassword3() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'Email' failed on the 'required' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -574,7 +574,7 @@ func (s *UserHandlerSuite) TestForgotPassword4() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal server error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -619,7 +619,7 @@ func (s *UserHandlerSuite) TestResetPassword2() {
 
 	expectedResp, _ := json.Marshal(fiber.Map{
 		"details": "validation error: field 'ResetPasswordToken' failed on the 'required' tag",
-		"error":   "Validation failed",
+		"message": "Validation failed",
 	})
 	actualResp, _ := io.ReadAll(resp.Body)
 
@@ -644,7 +644,7 @@ func (s *UserHandlerSuite) TestResetPassword3() {
 	// Run Test Request
 	resp, _ := s.router.Test(req)
 
-	expectedResp, _ := json.Marshal(fiber.Map{"error": "internal server error"})
+	expectedResp, _ := json.Marshal(fiber.Map{"message": "internal server error"})
 	actualResp, _ := io.ReadAll(resp.Body)
 
 	s.Equal(http.StatusInternalServerError, resp.StatusCode)

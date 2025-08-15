@@ -24,13 +24,13 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 
 	if c.Query("page") != "" {
 		if err := c.QueryParser(&pagination); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid pagination parameters"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid pagination parameters"})
 		}
 	}
 
 	users, total, err := h.service.GetAllUsers(c, pagination.Page, pagination.Limit)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	totalPages := int(total) / pagination.Limit
@@ -52,12 +52,12 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
 	user, err := h.service.GetUserByID(c, id)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"user": user})
@@ -68,16 +68,16 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	var user UserCreateRequest
 	// fmt.Println("user create request body:", string(c.Body()))
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body"})
 	}
 
 	if err := utils.Validate(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Validation failed", "details": err.Error()})
 	}
 
 	createdUser, err := h.service.CreateUser(c, user, file)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"user": createdUser})
@@ -88,19 +88,19 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body"})
 	}
 
 	if err := utils.Validate(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Validation failed", "details": err.Error()})
 	}
 
 	if err := h.service.UpdateUser(c, id, &user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "User updated successfully"})
@@ -109,11 +109,11 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
 	if err := h.service.DeleteUser(c, id); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "User deleted successfully"})
@@ -124,19 +124,19 @@ func (h *UserHandler) UpdateUserRole(c *fiber.Ctx) error {
 
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid ID format"})
 	}
 
 	if err := c.BodyParser(&roleUpdate); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body"})
 	}
 
 	if err := utils.Validate(&roleUpdate); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Validation failed", "details": err.Error()})
 	}
 
 	if err := h.service.UpdateUserRole(c, id, UserRole(roleUpdate.Role)); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "User role updated successfully"})
@@ -146,16 +146,16 @@ func (h *UserHandler) ForgotPassword(c *fiber.Ctx) error {
 	var req ForgotPasswordRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body"})
 	}
 
 	if err := utils.Validate(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Validation failed", "details": err.Error()})
 	}
 
 	err := h.service.ForgotPassword(c, req.Email)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Password reset email sent successfully"})
@@ -165,16 +165,16 @@ func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
 	var req ResetPasswordRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body"})
 	}
 
 	if err := utils.Validate(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Validation failed", "details": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Validation failed", "details": err.Error()})
 	}
 
 	err := h.service.ResetPassword(c, req.ResetPasswordToken, req.NewPassword)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Password reset successfully"})

@@ -162,7 +162,7 @@ func (s *userService) ForgotPassword(c *fiber.Ctx, email string) error {
 }
 
 func (s *userService) ResetPassword(c *fiber.Ctx, resetPasswordToken string, newPassword string) error {
-	expiresAt := time.Now().UTC().Add(-time.Duration(s.config.Email.ResetPasswordExpiresIn) * time.Second) // 2 days
+	expiresAt := time.Now().UTC().Add(-time.Duration(s.config.Email.ResetPasswordExpiresIn) * time.Second) // 30 minutes
 	user, err := s.repo.FindUserByResetPasswordToken(c, resetPasswordToken, expiresAt)
 	if err != nil {
 		return err

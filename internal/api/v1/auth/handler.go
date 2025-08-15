@@ -19,19 +19,19 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req LoginRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request payload"})
 	}
 
 	if err := utils.Validate(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	tokens, err := h.service.Login(c, req)
 	if err != nil {
 		if err == utils.ErrInvalidCredentials {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid email or password"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Invalid email or password"})
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to authenticate"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to authenticate"})
 	}
 
 	return c.JSON(tokens)
@@ -41,11 +41,11 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 	var req RefreshTokenRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request payload"})
 	}
 
 	if err := utils.Validate(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	tokens, err := h.service.RefreshToken(c, req.RefreshToken)
@@ -62,7 +62,7 @@ func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
 			message = "Refresh token expired"
 		}
 
-		return c.Status(status).JSON(fiber.Map{"error": message})
+		return c.Status(status).JSON(fiber.Map{"message": message})
 	}
 
 	return c.JSON(tokens)
@@ -72,11 +72,11 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	var req LogoutRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request payload"})
 	}
 
 	if err := utils.Validate(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	err := h.service.LogoutWithToken(c, req.RefreshToken)
@@ -93,7 +93,7 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 			message = "Refresh token expired"
 		}
 
-		return c.Status(status).JSON(fiber.Map{"error": message})
+		return c.Status(status).JSON(fiber.Map{"message": message})
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -103,16 +103,16 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req RegisterRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request payload"})
 	}
 
 	if err := utils.Validate(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	err := h.service.Register(c, req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "User registered successfully"})
